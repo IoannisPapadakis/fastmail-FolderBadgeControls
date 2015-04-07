@@ -1,4 +1,4 @@
-// Written by Michael Stepner, on 31 March 2015.
+// Written by Michael Stepner, on 7 April 2015.
 //
 /* Unlicence (abridged):
 This is free and unencumbered software released into the public domain.
@@ -12,25 +12,63 @@ For the full legal text of the Unlicense, see <http://unlicense.org>
 // @license     http://unlicense.org
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.3
+// @version     0.0.4
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
-// @grant       GM_addStyle
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @grant    	GM_registerMenuCommand
 // ==/UserScript==
 
 
-///// Configuration
-var foldersShowAllOnBadge = ["Folder_Name","Folder_Name2"];
-var foldersAlwaysShowBadge = [""];
-var foldersNeverShowBadge = [""];
+///// Retrieve configuration
+
+// GM_setValue ("foldersShowAllOnBadge",  "Folder_Name;Folder_Name2");
+// GM_setValue ("foldersAlwaysShowBadge", "");
+// GM_setValue ("foldersNeverShowBadge", "");
+
+var foldersShowAllOnBadge  = GM_getValue ("foldersShowAllOnBadge",  "");
+var foldersAlwaysShowBadge = GM_getValue ("foldersAlwaysShowBadge", "");
+var foldersNeverShowBadge  = GM_getValue ("foldersNeverShowBadge", "");
+
+
+///// Add menu commands for configuration
+GM_registerMenuCommand ("Folders to show TOTAL number of messages on badge", changeShowAll);
+GM_registerMenuCommand ("Folders to ALWAYS show badge", changeAlwaysShow);
+GM_registerMenuCommand ("Folders to NEVER show badge", changeNeverShow);
+
+function promptAndChangeStoredValue (userPrompt, GMvarname) {
+	currentVal = GM_getValue (GMvarname, "");
+    newVal = prompt (userPrompt, currentVal);
+    if (newVal!=null) {
+    	GM_setValue (GMvarname, newVal);
+    }
+}
+function changeShowAll () {
+    promptAndChangeStoredValue (
+    	'List folders to show TOTAL number of messages on badge (separated by semicolons):',
+    	"foldersShowAllOnBadge"
+    );
+}
+function changeAlwaysShow () {
+    promptAndChangeStoredValue (
+    	'List folders to ALWAYS show badge (separated by semicolons):',
+    	"foldersAlwaysShowBadge"
+    );
+}
+function changeNeverShow () {
+    promptAndChangeStoredValue (
+    	'List folders to NEVER show badge (separated by semicolons):',
+    	"foldersNeverShowBadge"
+    );
+}
 
 
 ///////////////////////////////
 
 ///// Define selectors
-var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.join("/?u='],[href^='/mail/") + "/?u=']";
-var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.join("/?u='],[href^='/mail/") + "/?u=']";
-var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.join("/?u='],[href^='/mail/") + "/?u=']";
-
+var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
 
 ///// Functions that control badges
 function showAllOnBadge (jNode) {
