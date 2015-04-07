@@ -12,21 +12,29 @@ For the full legal text of the Unlicense, see <http://unlicense.org>
 // @license     http://unlicense.org
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.2
+// @version     0.0.3
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
-// @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @grant       GM_addStyle
 // ==/UserScript==
 
 
+///// Configuration
+var foldersShowAllOnBadge = ["Folder_Name","Folder_Name2"];
+var foldersAlwaysShowBadge = [""];
+var foldersNeverShowBadge = [""];
 
-var foldersToShowAll = "[href='/mail/Folder_Name/?u=0xx00000'],[href='/mail/Folder_Name2/?u=0xx00000']";
+
+///////////////////////////////
+
+///// Define selectors
+var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.join("/?u='],[href^='/mail/") + "/?u=']";
+var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.join("/?u='],[href^='/mail/") + "/?u=']";
+var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.join("/?u='],[href^='/mail/") + "/?u=']";
 
 
-/////// Functions that control badges
-
+///// Functions that control badges
 function showAllOnBadge (jNode) {
-    // Always display badge with total number of messages (read and unread).
+    // Always display badge with total number of messages (read and unread), even if there are 0.
     var nMessagesStr = jNode.prop('title');
     var nMessages = nMessagesStr.replace("This folder is empty.","0").replace(/conversation[s]*/, "");
     jNode.children(".v-FolderSource-badge").text(nMessages);
@@ -41,15 +49,9 @@ function neverShowBadge (jNode) {
     jNode.children(".v-FolderSource-badge").addClass("u-hidden");
 }
 
-/////// waitForKeyElements
 
-//waitForKeyElements (foldersToShowAll, showAllOnBadge,false);
-
-/////// Mutation Observer
-// Note: there is certainly a narrower observer that could be set
-
-var targetNodes         = $("*");
-var MutationObserver    = window.MutationObserver || window.WebKitMutationObserver;
+///// Mutation Observer
+var targetNodes         = $("*"); // Note: there is certainly a narrower observer that could be set
 var myObserver          = new MutationObserver (mutationHandler);
 var obsConfig           = { childList: false, characterData: false, attributes: true, subtree: true, attributeFilter:['class'] };
 
@@ -65,13 +67,18 @@ function mutationHandler (mutationRecords) {
     mutationRecords.forEach ( function (mutation) {
         //console.log (mutation.type);
         //console.log (mutation.target);
-        if(mutation.target.classList.contains("v-FolderSource")) {
-            console.log (mutation.target);
-            $(foldersToShowAll).each(function() {
-                showAllOnBadge ($(this));
+		if(mutation.target.classList.contains("v-FolderSource")) {
+			console.log (mutation.target);
+			$(selectorsShowAllOnBadge).each(function() {
+				showAllOnBadge ($(this));
+			});
+            $(selectorsAlwaysShowBadge).each(function() {
+                alwaysShowBadge ($(this));
             });
-        }
+            $(selectorsNeverShowBadge).each(function() {
+                neverShowBadge ($(this));
+            });
+		}
     } );
 }
 
-// Note: could have used SetInterval instead of Mutation Observer to loop and perform fix every n seconds.
