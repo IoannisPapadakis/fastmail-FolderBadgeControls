@@ -74,7 +74,6 @@ if (firstConfig=="done") {
 	$("#gmPopupContainer").hide ();
 }
 
-
 // Set the input boxes to contain current config values
 document.getElementById('gmConfigShowTotal').value=foldersShowAllOnBadge ; 
 document.getElementById('gmConfigShowAlways').value=foldersAlwaysShowBadge ; 
@@ -180,14 +179,18 @@ updateSelectors();
 
 ///// Functions that control badges
 function showAllOnBadge (jNode) {
-    // Always display badge with total number of messages (read and unread), even if there are 0.
+    // Display badge with total number of messages (read and unread).
     var nMessagesStr = jNode.prop('title');
     var nMessages = nMessagesStr.replace("This folder is empty.","0").replace(/conversation[s]*/, "");
     jNode.children(".v-FolderSource-badge").text(nMessages);
-    jNode.children(".v-FolderSource-badge").removeClass("u-hidden");
+    if (nMessages!=0) {
+    	jNode.children(".v-FolderSource-badge").removeClass("u-hidden");
+    } else {
+    	jNode.children(".v-FolderSource-badge").addClass("u-hidden");
+    }
 }
 function alwaysShowBadge (jNode) {
-    // Always display badge with number of unread messages, even if there are 0.
+    // Always display badge, even if it is 0.
     jNode.children(".v-FolderSource-badge").removeClass("u-hidden");
 }
 function neverShowBadge (jNode) {
