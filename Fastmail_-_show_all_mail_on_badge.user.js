@@ -27,63 +27,140 @@ THE SOFTWARE.
 // @license     http://opensource.org/licenses/MIT
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.4
+// @version     0.0.5
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
+// @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant    	GM_registerMenuCommand
+// @grant       GM_addStyle
 // ==/UserScript==
 
+///// Load jQuery-UI CSS
+/*
+We add the CSS this way so that the embedded, relatively linked images load correctly.
+Ref: http://stackoverflow.com/questions/25468276/jquery-ui-is-not-working-in-my-userscript-without-css-or-with-customization/25468928#25468928
+*/
+// $("head").append (
+//     '<link '
+//   + 'href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/le-frog/jquery-ui.min.css" '
+//   + 'rel="stylesheet" type="text/css">'
+// );
 
 ///// Retrieve configuration
-
-// GM_setValue ("foldersShowAllOnBadge",  "Folder_Name;Folder_Name2");
-// GM_setValue ("foldersAlwaysShowBadge", "");
-// GM_setValue ("foldersNeverShowBadge", "");
-
 var foldersShowAllOnBadge  = GM_getValue ("foldersShowAllOnBadge",  "");
 var foldersAlwaysShowBadge = GM_getValue ("foldersAlwaysShowBadge", "");
 var foldersNeverShowBadge  = GM_getValue ("foldersNeverShowBadge", "");
 
 
 ///// Add menu commands for configuration
-GM_registerMenuCommand ("Folders to show TOTAL number of messages on badge", changeShowAll);
-GM_registerMenuCommand ("Folders to ALWAYS show badge", changeAlwaysShow);
-GM_registerMenuCommand ("Folders to NEVER show badge", changeNeverShow);
+GM_registerMenuCommand ("Folder badge configuration", changeConfig);
+function changeConfig () {
+	$("#gmPopupContainer").show ();
+}
 
-function promptAndChangeStoredValue (userPrompt, GMvarname) {
-	currentVal = GM_getValue (GMvarname, "");
-    newVal = prompt (userPrompt, currentVal);
-    if (newVal!=null) {
-    	GM_setValue (GMvarname, newVal);
-    }
+
+///// Add a configuration form in a popup box
+
+// Insert HTML for the pop-up box
+$("body").append ( '                                                          \
+    <div id="gmPopupContainer">                                               \
+    <form> <!-- For true form use method="POST" action="YOUR_DESIRED_URL" --> \
+    	<h1>Instructions:</h1> \
+    	<p>In each entry, list the folders whose badge you want to modify.</p> \
+    	<p>Separate each folder name by a semicolon.</p> \
+    	<br><p>You need to specify folders using the name in their URL:</p> \
+    	<p>&nbsp;&nbsp;&nbsp;https://www.fastmail.com/mail/<b>Folder_Name</b>/?u=0xx00000</p> \
+    	<br><p>You can always return to this configuration box:</p> \
+    	<p>&nbsp;&nbsp;&nbsp; Tools > Greasemonkey > User script commands... </p>\
+    	<p>&nbsp;&nbsp;&nbsp; > Folder badge configuration </p>\
+    	<br><h1>Configuration:</h1> \
+    	<p>Show <strong>total</strong> number of messages (read and unread) on badge:</p> \
+        <input type="text" id="gmConfigShowTotal">                           \
+    	<p><strong>Always</strong> show badge:</p> \
+        <input type="text" id="gmConfigShowAlways" value="">                           \
+    	<p><strong>Never</strong> show badge:</p> \
+        <input type="text" id="gmConfigShowNever" value="">                           \
+        <br><button id="gmClosePopupAndSave" type="button">Submit</button>         \
+    </form>                                                                   \
+    </div>                                                                    \
+' );
+
+// Set the input boxes to contain current config values
+document.getElementById('gmConfigShowTotal').value=foldersShowAllOnBadge ; 
+document.getElementById('gmConfigShowAlways').value=foldersAlwaysShowBadge ; 
+document.getElementById('gmConfigShowNever').value=foldersNeverShowBadge ; 
+
+// Save the new config values on 'Submit'
+$("#gmClosePopupAndSave").click ( function () {
+    foldersShowAllOnBadge  = document.getElementById('gmConfigShowTotal').value ;
+	foldersAlwaysShowBadge = document.getElementById('gmConfigShowAlways').value ; 
+	foldersNeverShowBadge  = document.getElementById('gmConfigShowNever').value ; 
+	updateConfig();
+    $("#gmPopupContainer").hide ();
+	selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+	selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+	selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+} );
+function updateConfig () {
+	GM_setValue ("foldersShowAllOnBadge", foldersShowAllOnBadge);
+	GM_setValue ("foldersAlwaysShowBadge", foldersAlwaysShowBadge);
+	GM_setValue ("foldersNeverShowBadge", foldersNeverShowBadge);
 }
-function changeShowAll () {
-    promptAndChangeStoredValue (
-    	'List folders to show TOTAL number of messages on badge (separated by semicolons):',
-    	"foldersShowAllOnBadge"
-    );
-}
-function changeAlwaysShow () {
-    promptAndChangeStoredValue (
-    	'List folders to ALWAYS show badge (separated by semicolons):',
-    	"foldersAlwaysShowBadge"
-    );
-}
-function changeNeverShow () {
-    promptAndChangeStoredValue (
-    	'List folders to NEVER show badge (separated by semicolons):',
-    	"foldersNeverShowBadge"
-    );
-}
+
+// Style the config popup box with CSS
+GM_addStyle ( "                                                 \
+    #gmPopupContainer {                                         \
+        position:               fixed;                          \
+        top:                    20%;                            \
+        left:                   20%;                            \
+        padding:                1em 2em;                            \
+        background:             #C0C0C0;                     \
+        border:                 3px double black;               \
+        border-radius:          1ex;                            \
+        z-index:                777;                            \
+    }                                                           \
+    #gmPopupContainer button{                                   \
+        cursor:                 pointer;                        \
+        margin:                 1em 1em 0;                      \
+    	padding-top: 5px; \
+	    padding-right: 5px; \
+	    padding-bottom: 5px; \
+	    padding-left: 5px; \
+        border:                 2px outset buttonface;          \
+    }                                                           \
+    #gmPopupContainer p{                                   \
+        line-height: 20px;			\
+    }                                                           \
+	#gmPopupContainer input{                                   \
+        width: 300px;			\
+        margin-bottom: 10px; \
+    }                                                           \
+    #gmPopupContainer h1{                                   \
+        font-weight: bold;			\
+        line-height: 30px;			\
+        padding-top: 0px; \
+    }                                                           \
+    #gmPopupContainer strong{                                   \
+        font-weight: bold;			\
+    }                                                           \
+" );
 
 
 ///////////////////////////////
 
 ///// Define selectors
+// function defineSelectorsFromFolders() {
+// 	var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+// 	var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+// 	var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+// 	return [selectorsShowAllOnBadge, selectorsAlwaysShowBadge, selectorsNeverShowBadge];
+// }
+
 var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
 var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
 var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+
 
 ///// Functions that control badges
 function showAllOnBadge (jNode) {
@@ -100,6 +177,17 @@ function alwaysShowBadge (jNode) {
 function neverShowBadge (jNode) {
     // Never display badge.
     jNode.children(".v-FolderSource-badge").addClass("u-hidden");
+}
+function updateCustomBadges () {
+	$(selectorsShowAllOnBadge).each(function() {
+		showAllOnBadge ($(this));
+	});
+	$(selectorsAlwaysShowBadge).each(function() {
+	    alwaysShowBadge ($(this));
+	});
+	$(selectorsNeverShowBadge).each(function() {
+	    neverShowBadge ($(this));
+	});
 }
 
 
@@ -122,15 +210,7 @@ function mutationHandler (mutationRecords) {
         //console.log (mutation.target);
 		if(mutation.target.classList.contains("v-FolderSource")) {
 			console.log (mutation.target);
-			$(selectorsShowAllOnBadge).each(function() {
-				showAllOnBadge ($(this));
-			});
-            $(selectorsAlwaysShowBadge).each(function() {
-                alwaysShowBadge ($(this));
-            });
-            $(selectorsNeverShowBadge).each(function() {
-                neverShowBadge ($(this));
-            });
+			updateCustomBadges();
 		}
     } );
 }
