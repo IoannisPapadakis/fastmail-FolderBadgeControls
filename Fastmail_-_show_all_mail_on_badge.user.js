@@ -211,7 +211,7 @@ function refreshCustomBadges (selectors) {
 
 
 ///// Mutation Observer
-var targetNodes         = $("*"); // Note: there is certainly a narrower observer that could be set
+var targetNodes         = $("*"); // Note: there is certainly a narrower observer that could be set. If you figure it out, let me know!
 var myObserver          = new MutationObserver (mutationHandler);
 var obsConfig           = { childList: false, characterData: false, attributes: true, subtree: true, attributeFilter:['class'] };
 
@@ -221,14 +221,9 @@ targetNodes.each ( function () {
 } );
 
 function mutationHandler (mutationRecords) {
-    //console.info ("mutationHandler:");
-    //window.alert("hello");
-
     mutationRecords.forEach ( function (mutation) {
-        //console.log (mutation.type);
-        //console.log (mutation.target);
 		if(mutation.target.classList.contains("v-FolderSource")) {
-			console.log (mutation.target);
+			//console.log (mutation.target);
 			refreshCustomBadges(folderSelectors);
 		}
     } );
