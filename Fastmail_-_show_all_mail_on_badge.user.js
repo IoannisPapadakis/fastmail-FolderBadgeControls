@@ -46,7 +46,7 @@ var firstConfig  = GM_getValue ("firstConfig", "");
 ///// Create a configuration form in a popup box
 
 // Insert HTML for the popup box
-$("body").append ( '                                                          \
+$("body[contenteditable!='true']").append ( '                                                          \
     <div id="gmPopupContainer">                                               \
     <form> <!-- For true form use method="POST" action="YOUR_DESIRED_URL" --> \
     	<h1>Instructions:</h1> \
