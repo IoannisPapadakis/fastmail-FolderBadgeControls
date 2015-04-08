@@ -1,4 +1,4 @@
-// Written by Michael Stepner, on 7 April 2015.
+// Written by Michael Stepner, 7 April 2015.
 //
 /* The MIT License (MIT):
 Copyright (c) 2015 Michael Stepner
@@ -27,25 +27,14 @@ THE SOFTWARE.
 // @license     http://opensource.org/licenses/MIT
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.5
+// @version     0.0.6
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
-// @require     http://ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant    	GM_registerMenuCommand
 // @grant       GM_addStyle
 // ==/UserScript==
 
-///// Load jQuery-UI CSS
-/*
-We add the CSS this way so that the embedded, relatively linked images load correctly.
-Ref: http://stackoverflow.com/questions/25468276/jquery-ui-is-not-working-in-my-userscript-without-css-or-with-customization/25468928#25468928
-*/
-// $("head").append (
-//     '<link '
-//   + 'href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/le-frog/jquery-ui.min.css" '
-//   + 'rel="stylesheet" type="text/css">'
-// );
 
 ///// Retrieve configuration
 var foldersShowAllOnBadge  = GM_getValue ("foldersShowAllOnBadge",  "");
@@ -53,14 +42,7 @@ var foldersAlwaysShowBadge = GM_getValue ("foldersAlwaysShowBadge", "");
 var foldersNeverShowBadge  = GM_getValue ("foldersNeverShowBadge", "");
 
 
-///// Add menu commands for configuration
-GM_registerMenuCommand ("Folder badge configuration", changeConfig);
-function changeConfig () {
-	$("#gmPopupContainer").show ();
-}
-
-
-///// Add a configuration form in a popup box
+///// Create a configuration form in a popup box
 
 // Insert HTML for the pop-up box
 $("body").append ( '                                                          \
@@ -71,9 +53,9 @@ $("body").append ( '                                                          \
     	<p>Separate each folder name by a semicolon.</p> \
     	<br><p>You need to specify folders using the name in their URL:</p> \
     	<p>&nbsp;&nbsp;&nbsp;https://www.fastmail.com/mail/<b>Folder_Name</b>/?u=0xx00000</p> \
-    	<br><p>You can always return to this configuration box:</p> \
-    	<p>&nbsp;&nbsp;&nbsp; Tools > Greasemonkey > User script commands... </p>\
-    	<p>&nbsp;&nbsp;&nbsp; > Folder badge configuration </p>\
+    	<br><p>You can always return to this configuration box via Tools > </p> \
+    	<p>&nbsp;&nbsp;&nbsp;> Greasemonkey > User script commands... </p>\
+    	<p>&nbsp;&nbsp;&nbsp;> Folder badge configuration </p>\
     	<br><h1>Configuration:</h1> \
     	<p>Show <strong>total</strong> number of messages (read and unread) on badge:</p> \
         <input type="text" id="gmConfigShowTotal">                           \
@@ -97,10 +79,9 @@ $("#gmClosePopupAndSave").click ( function () {
 	foldersAlwaysShowBadge = document.getElementById('gmConfigShowAlways').value ; 
 	foldersNeverShowBadge  = document.getElementById('gmConfigShowNever').value ; 
 	updateConfig();
+	updateSelectors();
     $("#gmPopupContainer").hide ();
-	selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-	selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-	selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+    refreshCustomBadges(folderSelectors);
 } );
 function updateConfig () {
 	GM_setValue ("foldersShowAllOnBadge", foldersShowAllOnBadge);
@@ -146,20 +127,47 @@ GM_addStyle ( "                                                 \
     }                                                           \
 " );
 
+///// Add Greasemonkey context menu command to edit configuration
+GM_registerMenuCommand ("Folder badge configuration", changeConfig);
+function changeConfig () {
+	$("#gmPopupContainer").show ();
+}
+
 
 ///////////////////////////////
 
 ///// Define selectors
-// function defineSelectorsFromFolders() {
-// 	var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-// 	var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-// 	var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-// 	return [selectorsShowAllOnBadge, selectorsAlwaysShowBadge, selectorsNeverShowBadge];
-// }
+function defineSelectorsFromFolders() {
+	if (foldersShowAllOnBadge!="") {
+		var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+	} else {
+		var selectorsShowAllOnBadge = null
+	}
 
-var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+	if (foldersAlwaysShowBadge!="") {
+		var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+	} else {
+		var selectorsAlwaysShowBadge = null
+	}
+
+	if (foldersNeverShowBadge!="") {
+		var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+	} else {
+		var selectorsNeverShowBadge = null
+	}
+	
+	return {
+        showTotal: selectorsShowAllOnBadge,
+        showAlways: selectorsAlwaysShowBadge,
+        showNever: selectorsNeverShowBadge
+    };  
+}
+function updateSelectors() {
+	folderSelectors = defineSelectorsFromFolders();
+}
+
+var folderSelectors = null;
+updateSelectors();
 
 
 ///// Functions that control badges
@@ -178,14 +186,14 @@ function neverShowBadge (jNode) {
     // Never display badge.
     jNode.children(".v-FolderSource-badge").addClass("u-hidden");
 }
-function updateCustomBadges () {
-	$(selectorsShowAllOnBadge).each(function() {
+function refreshCustomBadges (selectors) {
+	$(selectors.showTotal).each(function() {
 		showAllOnBadge ($(this));
 	});
-	$(selectorsAlwaysShowBadge).each(function() {
+	$(selectors.showAlways).each(function() {
 	    alwaysShowBadge ($(this));
 	});
-	$(selectorsNeverShowBadge).each(function() {
+	$(selectors.showNever).each(function() {
 	    neverShowBadge ($(this));
 	});
 }
@@ -210,7 +218,7 @@ function mutationHandler (mutationRecords) {
         //console.log (mutation.target);
 		if(mutation.target.classList.contains("v-FolderSource")) {
 			console.log (mutation.target);
-			updateCustomBadges();
+			refreshCustomBadges(folderSelectors);
 		}
     } );
 }
