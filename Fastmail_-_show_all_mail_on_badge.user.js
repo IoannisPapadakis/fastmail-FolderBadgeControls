@@ -27,7 +27,7 @@ THE SOFTWARE.
 // @license     http://opensource.org/licenses/MIT
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.6
+// @version     0.0.7
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -64,7 +64,8 @@ $("body").append ( '                                                          \
         <input type="text" id="gmConfigShowAlways" value="">                           \
     	<p><strong>Never</strong> show badge:</p> \
         <input type="text" id="gmConfigShowNever" value="">                           \
-        <br><button id="gmClosePopupAndSave" type="button">Submit</button>         \
+        <br><button id="gmClosePopupAndCancel" type="button">Cancel</button> \
+        <button id="gmClosePopupAndSave" type="button"><strong>Submit</strong></button>         \
     </form>                                                                   \
     </div>                                                                    \
 ' );
@@ -75,9 +76,12 @@ if (firstConfig=="done") {
 }
 
 // Set the input boxes to contain current config values
-document.getElementById('gmConfigShowTotal').value=foldersShowAllOnBadge ; 
-document.getElementById('gmConfigShowAlways').value=foldersAlwaysShowBadge ; 
-document.getElementById('gmConfigShowNever').value=foldersNeverShowBadge ; 
+function setPopupConfigValues () {
+	document.getElementById('gmConfigShowTotal').value=foldersShowAllOnBadge ; 
+	document.getElementById('gmConfigShowAlways').value=foldersAlwaysShowBadge ; 
+	document.getElementById('gmConfigShowNever').value=foldersNeverShowBadge ; 
+}
+setPopupConfigValues ()
 
 // Save the new config values on 'Submit'
 $("#gmClosePopupAndSave").click ( function () {
@@ -95,6 +99,12 @@ function updateConfig () {
 	GM_setValue ("foldersNeverShowBadge", foldersNeverShowBadge);
 	GM_setValue ("firstConfig", "done");
 }
+
+// Restore popup text entry values on 'Cancel'
+$("#gmClosePopupAndCancel").click ( function () {
+	setPopupConfigValues ()
+    $("#gmPopupContainer").hide ();
+} );
 
 // Style the config popup box with CSS
 GM_addStyle ( "                                                 \
@@ -116,12 +126,13 @@ GM_addStyle ( "                                                 \
 	    padding-bottom: 5px; \
 	    padding-left: 5px; \
         border:                 2px outset buttonface;          \
+        margin-left: 75px; \
     }                                                           \
     #gmPopupContainer p{                                   \
         line-height: 20px;			\
     }                                                           \
 	#gmPopupContainer input{                                   \
-        width: 300px;			\
+        width: 350px;			\
         margin-bottom: 10px; \
     }                                                           \
     #gmPopupContainer h1{                                   \
