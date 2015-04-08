@@ -40,11 +40,12 @@ THE SOFTWARE.
 var foldersShowAllOnBadge  = GM_getValue ("foldersShowAllOnBadge",  "");
 var foldersAlwaysShowBadge = GM_getValue ("foldersAlwaysShowBadge", "");
 var foldersNeverShowBadge  = GM_getValue ("foldersNeverShowBadge", "");
+var firstConfig  = GM_getValue ("firstConfig", "");
 
 
 ///// Create a configuration form in a popup box
 
-// Insert HTML for the pop-up box
+// Insert HTML for the popup box
 $("body").append ( '                                                          \
     <div id="gmPopupContainer">                                               \
     <form> <!-- For true form use method="POST" action="YOUR_DESIRED_URL" --> \
@@ -68,6 +69,12 @@ $("body").append ( '                                                          \
     </div>                                                                    \
 ' );
 
+// Hide the popup box unless config has never been done before
+if (firstConfig=="done") {
+	$("#gmPopupContainer").hide ();
+}
+
+
 // Set the input boxes to contain current config values
 document.getElementById('gmConfigShowTotal').value=foldersShowAllOnBadge ; 
 document.getElementById('gmConfigShowAlways').value=foldersAlwaysShowBadge ; 
@@ -87,6 +94,7 @@ function updateConfig () {
 	GM_setValue ("foldersShowAllOnBadge", foldersShowAllOnBadge);
 	GM_setValue ("foldersAlwaysShowBadge", foldersAlwaysShowBadge);
 	GM_setValue ("foldersNeverShowBadge", foldersNeverShowBadge);
+	GM_setValue ("firstConfig", "done");
 }
 
 // Style the config popup box with CSS
