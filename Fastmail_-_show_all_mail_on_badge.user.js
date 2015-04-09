@@ -1,4 +1,4 @@
-// Written by Michael Stepner, 7 April 2015.
+// Written by Michael Stepner, 8 April 2015.
 //
 /* The MIT License (MIT):
 Copyright (c) 2015 Michael Stepner
@@ -27,11 +27,11 @@ THE SOFTWARE.
 // @license     http://opensource.org/licenses/MIT
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.7
+// @version     0.0.8
 // @require     http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
-// @grant    	GM_registerMenuCommand
+// @grant       GM_registerMenuCommand
 // @grant       GM_addStyle
 // ==/UserScript==
 
@@ -49,20 +49,18 @@ var firstConfig  = GM_getValue ("firstConfig", "");
 $("body[contenteditable!='true']").append ( '                                                          \
     <div id="gmPopupContainer">                                               \
     <form> <!-- For true form use method="POST" action="YOUR_DESIRED_URL" --> \
-    	<h1>Instructions:</h1> \
-    	<p>In each entry, list the folders whose badge you want to modify.</p> \
-    	<p>Separate each folder name by a semicolon.</p> \
-    	<br><p>You need to specify folders using the name in their URL:</p> \
-    	<p>&nbsp;&nbsp;&nbsp;https://www.fastmail.com/mail/<b>Folder_Name</b>/?u=0xx00000</p> \
-    	<br><p>You can always return to this configuration box via Tools > </p> \
-    	<p>&nbsp;&nbsp;&nbsp;> Greasemonkey > User script commands... </p>\
-    	<p>&nbsp;&nbsp;&nbsp;> Folder badge configuration </p>\
-    	<br><h1>Configuration:</h1> \
-    	<p>Show <strong>total</strong> number of messages (read and unread) on badge:</p> \
+        <h1>Instructions:</h1> \
+        <p>In each entry, list the folders whose badge you want to modify.</p> \
+        <p>Separate each folder name by a semicolon.</p> \
+        <br><p>You need to specify folders using the name in their URL:</p> \
+        <p>&nbsp;&nbsp;&nbsp;https://www.fastmail.com/mail/<b>Folder_Name</b>/?u=0xx00000</p> \
+        <br><p id="gmMenuCommandInstructions">&nbsp;</p> \
+        <br><h1>Configuration:</h1> \
+        <p>Show <strong>total</strong> number of messages (read and unread) on badge:</p> \
         <input type="text" id="gmConfigShowTotal">                           \
-    	<p><strong>Always</strong> show badge:</p> \
+        <p><strong>Always</strong> show badge:</p> \
         <input type="text" id="gmConfigShowAlways" value="">                           \
-    	<p><strong>Never</strong> show badge:</p> \
+        <p><strong>Never</strong> show badge:</p> \
         <input type="text" id="gmConfigShowNever" value="">                           \
         <br><button id="gmClosePopupAndCancel" type="button">Cancel</button> \
         <button id="gmClosePopupAndSave" type="button"><strong>Submit</strong></button>         \
@@ -70,39 +68,60 @@ $("body[contenteditable!='true']").append ( '                                   
     </div>                                                                    \
 ' );
 
+// Detect whether running in Greasemonkey or Tampermonkey
+var scriptEngine;
+if (typeof GM_info === "undefined") {
+    scriptEngine = "plain";
+    // plain Chrome, or Opera, or scriptish, or Safari, or rarer
+}
+else {
+    scriptEngine = GM_info.scriptHandler  ||  "Greasemonkey";
+}
+
+// Write correct instructions for Greasemonkey or Tampermonkey
+if (scriptEngine=="Greasemonkey") {
+    document.getElementById("gmMenuCommandInstructions").innerHTML = "You can always return to this configuration box via Tools > <br>&nbsp;&nbsp;&nbsp;> Greasemonkey > User script commands... <br>&nbsp;&nbsp;&nbsp;> Folder badge configuration";
+}
+else if (scriptEngine=="Tampermonkey") {
+    document.getElementById("gmMenuCommandInstructions").innerHTML = "You can always return to this configuration box by clicking<br>&nbsp;&nbsp;&nbsp;the Tampermonkey menu button while in Fastmail, then<br>&nbsp;&nbsp;&nbsp;clicking 'Folder badge configuration'.";
+}
+else {
+    document.getElementById("gmMenuCommandInstructions").innerHTML = "You seem to be running this userscript without Greasemonkey<br>&nbsp;&nbsp;&nbsp;or Tampermonkey. Even if it is working, you will be unable to<br>&nbsp;&nbsp;&nbsp;return to this configuration box later. You should use<br>&nbsp;&nbsp;&nbsp;Greasemonkey in Firefox or Tampermonkey otherwise.";
+}
+
 // Hide the popup box unless config has never been done before
 if (firstConfig=="done") {
-	$("#gmPopupContainer").hide ();
+    $("#gmPopupContainer").hide ();
 }
 
 // Set the input boxes to contain current config values
 function setPopupConfigValues () {
-	document.getElementById('gmConfigShowTotal').value=foldersShowAllOnBadge ; 
-	document.getElementById('gmConfigShowAlways').value=foldersAlwaysShowBadge ; 
-	document.getElementById('gmConfigShowNever').value=foldersNeverShowBadge ; 
+    document.getElementById('gmConfigShowTotal').value=foldersShowAllOnBadge ; 
+    document.getElementById('gmConfigShowAlways').value=foldersAlwaysShowBadge ; 
+    document.getElementById('gmConfigShowNever').value=foldersNeverShowBadge ; 
 }
-setPopupConfigValues ()
+setPopupConfigValues ();
 
 // Save the new config values on 'Submit'
 $("#gmClosePopupAndSave").click ( function () {
     foldersShowAllOnBadge  = document.getElementById('gmConfigShowTotal').value ;
-	foldersAlwaysShowBadge = document.getElementById('gmConfigShowAlways').value ; 
-	foldersNeverShowBadge  = document.getElementById('gmConfigShowNever').value ; 
-	updateConfig();
-	updateSelectors();
+    foldersAlwaysShowBadge = document.getElementById('gmConfigShowAlways').value ; 
+    foldersNeverShowBadge  = document.getElementById('gmConfigShowNever').value ; 
+    updateConfig();
+    updateSelectors();
     $("#gmPopupContainer").hide ();
     refreshCustomBadges(folderSelectors);
 } );
 function updateConfig () {
-	GM_setValue ("foldersShowAllOnBadge", foldersShowAllOnBadge);
-	GM_setValue ("foldersAlwaysShowBadge", foldersAlwaysShowBadge);
-	GM_setValue ("foldersNeverShowBadge", foldersNeverShowBadge);
-	GM_setValue ("firstConfig", "done");
+    GM_setValue ("foldersShowAllOnBadge", foldersShowAllOnBadge);
+    GM_setValue ("foldersAlwaysShowBadge", foldersAlwaysShowBadge);
+    GM_setValue ("foldersNeverShowBadge", foldersNeverShowBadge);
+    GM_setValue ("firstConfig", "done");
 }
 
 // Restore popup text entry values on 'Cancel'
 $("#gmClosePopupAndCancel").click ( function () {
-	setPopupConfigValues ()
+    setPopupConfigValues ();
     $("#gmPopupContainer").hide ();
 } );
 
@@ -121,34 +140,34 @@ GM_addStyle ( "                                                 \
     #gmPopupContainer button{                                   \
         cursor:                 pointer;                        \
         margin:                 1em 1em 0;                      \
-    	padding-top: 5px; \
-	    padding-right: 5px; \
-	    padding-bottom: 5px; \
-	    padding-left: 5px; \
+        padding-top: 5px; \
+        padding-right: 5px; \
+        padding-bottom: 5px; \
+        padding-left: 5px; \
         border:                 2px outset buttonface;          \
         margin-left: 75px; \
     }                                                           \
     #gmPopupContainer p{                                   \
-        line-height: 20px;			\
+        line-height: 20px;          \
     }                                                           \
-	#gmPopupContainer input{                                   \
-        width: 350px;			\
+    #gmPopupContainer input{                                   \
+        width: 350px;           \
         margin-bottom: 10px; \
     }                                                           \
     #gmPopupContainer h1{                                   \
-        font-weight: bold;			\
-        line-height: 30px;			\
+        font-weight: bold;          \
+        line-height: 30px;          \
         padding-top: 0px; \
     }                                                           \
     #gmPopupContainer strong{                                   \
-        font-weight: bold;			\
+        font-weight: bold;          \
     }                                                           \
 " );
 
 ///// Add Greasemonkey context menu command to edit configuration
 GM_registerMenuCommand ("Folder badge configuration", changeConfig);
 function changeConfig () {
-	$("#gmPopupContainer").show ();
+    $("#gmPopupContainer").show ();
 }
 
 
@@ -156,32 +175,32 @@ function changeConfig () {
 
 ///// Define selectors
 function defineSelectorsFromFolders() {
-	if (foldersShowAllOnBadge!="") {
-		var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-	} else {
-		var selectorsShowAllOnBadge = null
-	}
+    if (foldersShowAllOnBadge!="") {
+        var selectorsShowAllOnBadge = "[href^='/mail/" + foldersShowAllOnBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+    } else {
+        var selectorsShowAllOnBadge = null
+    }
 
-	if (foldersAlwaysShowBadge!="") {
-		var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-	} else {
-		var selectorsAlwaysShowBadge = null
-	}
+    if (foldersAlwaysShowBadge!="") {
+        var selectorsAlwaysShowBadge = "[href^='/mail/" + foldersAlwaysShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+    } else {
+        var selectorsAlwaysShowBadge = null
+    }
 
-	if (foldersNeverShowBadge!="") {
-		var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
-	} else {
-		var selectorsNeverShowBadge = null
-	}
-	
-	return {
+    if (foldersNeverShowBadge!="") {
+        var selectorsNeverShowBadge = "[href^='/mail/" + foldersNeverShowBadge.split(";").join("/?u='],[href^='/mail/") + "/?u=']";
+    } else {
+        var selectorsNeverShowBadge = null
+    }
+    
+    return {
         showTotal: selectorsShowAllOnBadge,
         showAlways: selectorsAlwaysShowBadge,
         showNever: selectorsNeverShowBadge
     };  
 }
 function updateSelectors() {
-	folderSelectors = defineSelectorsFromFolders();
+    folderSelectors = defineSelectorsFromFolders();
 }
 
 var folderSelectors = null;
@@ -195,9 +214,9 @@ function showAllOnBadge (jNode) {
     var nMessages = nMessagesStr.replace("This folder is empty.","0").replace(/conversation[s]*/, "");
     jNode.children(".v-FolderSource-badge").text(nMessages);
     if (nMessages!=0) {
-    	jNode.children(".v-FolderSource-badge").removeClass("u-hidden");
+        jNode.children(".v-FolderSource-badge").removeClass("u-hidden");
     } else {
-    	jNode.children(".v-FolderSource-badge").addClass("u-hidden");
+        jNode.children(".v-FolderSource-badge").addClass("u-hidden");
     }
 }
 function alwaysShowBadge (jNode) {
@@ -209,15 +228,15 @@ function neverShowBadge (jNode) {
     jNode.children(".v-FolderSource-badge").addClass("u-hidden");
 }
 function refreshCustomBadges (selectors) {
-	$(selectors.showTotal).each(function() {
-		showAllOnBadge ($(this));
-	});
-	$(selectors.showAlways).each(function() {
-	    alwaysShowBadge ($(this));
-	});
-	$(selectors.showNever).each(function() {
-	    neverShowBadge ($(this));
-	});
+    $(selectors.showTotal).each(function() {
+        showAllOnBadge ($(this));
+    });
+    $(selectors.showAlways).each(function() {
+        alwaysShowBadge ($(this));
+    });
+    $(selectors.showNever).each(function() {
+        neverShowBadge ($(this));
+    });
 }
 
 
@@ -233,10 +252,10 @@ targetNodes.each ( function () {
 
 function mutationHandler (mutationRecords) {
     mutationRecords.forEach ( function (mutation) {
-		if(mutation.target.classList.contains("v-FolderSource")) {
-			//console.log (mutation.target);
-			refreshCustomBadges(folderSelectors);
-		}
+        if(mutation.target.classList.contains("v-FolderSource")) {
+            //console.log (mutation.target);
+            refreshCustomBadges(folderSelectors);
+        }
     } );
 }
 
