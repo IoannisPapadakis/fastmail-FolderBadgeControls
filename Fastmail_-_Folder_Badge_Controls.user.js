@@ -23,11 +23,12 @@ THE SOFTWARE.
 */
 // ==UserScript==
 // @name        Fastmail - Control folder badges
-// @namespace   http://michaelstepner.com
+// @namespace   https://michaelstepner.com
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.8
-// @require     http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
+// @version     0.0.9
+// @updateURL   https://github.com/michaelstepner/fastmail-FolderBadgeControls/raw/master/Fastmail_-_Folder_Badge_Controls.user.js
+// @require     https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
