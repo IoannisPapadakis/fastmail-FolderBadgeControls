@@ -18,8 +18,8 @@ This is a [Greasemonkey](https://addons.mozilla.org/en-us/firefox/addon/greasemo
 To install Fastmail Folder Badge Controls:
 
 1. Install [Greasemonkey](https://addons.mozilla.org/en-us/firefox/addon/greasemonkey/) if you're using Firefox, or [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en) if you're using Chrome.
-2. [Click here to install Fastmail Folder Badge Controls](https://github.com/michaelstepner/fastmail-FolderBadgeControls/raw/master/Fastmail_-_Folder_Badge_Controls.user.js).
-3. Visit [Fastmail](https://www.fastmail.com/), where a configuration box will open automatically.  The configuration box is only auto-displayed after you've first installed Fastmail Badge Controls.
+2. Click the `Install this script` button on this [Greasy Fork page](https://greasyfork.org/en/scripts/9461-fastmail-folder-badge-controls).
+3. Visit your [Fastmail](https://www.fastmail.com/) inbox, where a configuration box will open automatically.  The configuration box is only auto-displayed after you've first installed Fastmail Badge Controls.
 
 ### Configuration
 
