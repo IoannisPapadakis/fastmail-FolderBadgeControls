@@ -29,6 +29,7 @@ THE SOFTWARE.
 // @include     https://www.fastmail.com/mail/*
 // @version     0.0.11
 // @updateURL   https://github.com/michaelstepner/fastmail-FolderBadgeControls/raw/master/Fastmail_-_Folder_Badge_Controls.user.js
+// @downloadURL https://github.com/michaelstepner/fastmail-FolderBadgeControls/raw/master/Fastmail_-_Folder_Badge_Controls.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js
 // @grant       GM_getValue
 // @grant       GM_setValue
