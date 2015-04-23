@@ -22,12 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 // ==UserScript==
-// @name        Fastmail - Control folder badges
+// @name        Fastmail - Folder Badge Controls
 // @namespace   https://michaelstepner.com
 // @author      Michael Stepner
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
-// @version     0.0.12
+// @version     0.0.13
 // @updateURL   https://github.com/michaelstepner/fastmail-FolderBadgeControls/raw/master/Fastmail_-_Folder_Badge_Controls.user.js
 // @downloadURL https://github.com/michaelstepner/fastmail-FolderBadgeControls/raw/master/Fastmail_-_Folder_Badge_Controls.user.js
 // @require     https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js

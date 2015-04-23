@@ -1,4 +1,4 @@
-Fastmail Folder Badge Controls
+Fastmail - Folder Badge Controls
 -----------------------
 
 Want to see a badge with the total number of messages on certain folders? Never want to see a badge on some folders?  Then this is the program for you.
