@@ -24,7 +24,6 @@ THE SOFTWARE.
 // ==UserScript==
 // @name        Fastmail - Control folder badges
 // @namespace   http://michaelstepner.com
-// @license     http://opensource.org/licenses/MIT
 // @description Turn badges on or off for specific folders, or show total # of messages.
 // @include     https://www.fastmail.com/mail/*
 // @version     0.0.8
